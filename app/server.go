@@ -21,6 +21,10 @@ func main() {
 
 		c, err := l.Accept()
 		if err != nil {
+			if err == io.EOF {
+				break
+			}
+
 			fmt.Println("Error accepting connection: ", err.Error())
 			continue
 		}
@@ -38,9 +42,6 @@ func handleRequest(c net.Conn) {
 	r, err := c.Read(command)
 
 	if err != nil {
-		if err == io.EOF {
-			break
-		}
 		fmt.Println("Error Reading from connection")
 		os.Exit(1)
 	}
