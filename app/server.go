@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	// Uncomment this block to pass the first stage
+	"io"
 	"net"
 	"os"
 )
@@ -25,6 +26,7 @@ func main() {
 		}
 
 		go handleRequest(c)
+		defer c.Close()
 	}
 
 }
@@ -36,6 +38,9 @@ func handleRequest(c net.Conn) {
 	r, err := c.Read(command)
 
 	if err != nil {
+		if err == io.EOF {
+			break
+		}
 		fmt.Println("Error Reading from connection")
 		os.Exit(1)
 	}
