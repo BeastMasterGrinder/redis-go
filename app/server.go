@@ -1,49 +1,94 @@
+// package main
+//
+// import (
+//
+//	"bufio"
+//	"fmt"
+//	"io"
+//	"strings"
+//	"net"
+//	"os"
+//
+// )
+//
+//	func main() {
+//		// You can use print statements as follows for debugging, they'll be visible when running tests.
+//		fmt.Println("Logs from your program will appear here!")
+//
+//		l, err := net.Listen("tcp", "0.0.0.0:6379")
+//		if err != nil {
+//			fmt.Println("Failed to bind to port 6379")
+//			os.Exit(1)
+//		}
+//		c, err := l.Accept()
+//		if err != nil {
+//			fmt.Println(err)
+//			return
+//		}
+//
+//		defer c.Close()
+//
+//		for {
+//			buf := make([]byte, 1024)
+//
+//			//read message from the client
+//			r, err := c.Read(buf)
+//			if err != nil {
+//				if err == io.EOF {
+//					break
+//				}
+//				fmt.Println("Error Reading from Client: ", err.Error())
+//				os.Exit(1)
+//			}
+//			input := "$5\r\nAhmed\r\n"
+//
+//			reader := bufio.NewReader(strings.NewReader(input))
+//			fmt.Printf("Read this from Client: %d", r)
+//			_, err = c.Write([]byte("+PONG\r\n"))
+//
+//			if err != nil {
+//				fmt.Println("Error Writing to Connection")
+//				break
+//			}
+//		}
+//	}
 package main
 
 import (
 	"fmt"
-	"io"
-	// Uncomment this block to pass the first stage
 	"net"
-	"os"
 )
 
 func main() {
-	// You can use print statements as follows for debugging, they'll be visible when running tests.
-	fmt.Println("Logs from your program will appear here!")
+	fmt.Println("Listening on port :6379")
 
-	l, err := net.Listen("tcp", "0.0.0.0:6379")
-	if err != nil {
-		fmt.Println("Failed to bind to port 6379")
-		os.Exit(1)
-	}
-	c, err := l.Accept()
+	// Create a new server
+	l, err := net.Listen("tcp", ":6379")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	defer c.Close()
+	// Listen for connections
+	conn, err := l.Accept()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	defer conn.Close()
 
 	for {
-		buf := make([]byte, 1024)
-
-		//read message from the client
-		r, err := c.Read(buf)
+		resp := NewResp(conn)
+		value, err := resp.Read()
 		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			fmt.Println("Error Reading from Client: ", err.Error())
-			os.Exit(1)
+			fmt.Println(err)
+			return
 		}
 
-		fmt.Printf("Read this from Client: %d", r)
-		_, err = c.Write([]byte("+PONG\r\n"))
+		fmt.Println(value)
 
-		if err != nil {
-			fmt.Println("Error Writing to Connection")
-			break
-		}
+		// ignore request and send back a PONG
+		conn.Write([]byte("+OK\r\n"))
 	}
 }
