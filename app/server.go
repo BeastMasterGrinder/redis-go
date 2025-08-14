@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	// Uncomment this block to pass the first stage
 	"net"
 	"os"
@@ -30,8 +31,11 @@ func main() {
 		//read message from the client
 		r, err := c.Read(buf)
 		if err != nil {
-			fmt.Println("Error Reading from Connection")
-			break
+			if err == io.EOF {
+				break
+			}
+			fmt.Println("Error Reading from Client: ", err.Error())
+			os.Exit(1)
 		}
 
 		fmt.Printf("Read this from Client: %d", r)
@@ -41,7 +45,5 @@ func main() {
 			fmt.Println("Error Writing to Connection")
 			break
 		}
-
 	}
-
 }
